@@ -222,12 +222,7 @@ const SCHEDULE = {
     const daySpan = document.createElement('span');
     daySpan.className = 'day' + (isToday ? ' today' : '');
     daySpan.textContent = day;
-    if (isToday) {
-      const badge = document.createElement('span');
-      badge.className = 'badge-today';
-      badge.textContent = 'today';
-      daySpan.appendChild(badge);
-    }
+    
 
     const timeSpan = document.createElement('span');
     timeSpan.className = 'time' + (type === 'blocked' ? ' dim' : '');
