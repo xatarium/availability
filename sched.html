@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Availability</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f4ef;
+      --card-bg: #ffffff;
+      --border: rgba(0,0,0,0.10);
+      --border-strong: rgba(0,0,0,0.18);
+      --text-primary: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-tertiary: #88877f;
+      --today-bg: #f1f0ea;
+      --badge-bg: #e6f1fb;
+      --badge-text: #0c447c;
+      --on-bg: #eaf3de;
+      --on-text: #3b6d11;
+      --on-dot: #639922;
+      --off-bg: #fcebeb;
+      --off-text: #a32d2d;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111110;
+        --card-bg: #1c1c1a;
+        --border: rgba(255,255,255,0.08);
+        --border-strong: rgba(255,255,255,0.14);
+        --text-primary: #e8e7e2;
+        --text-secondary: #b4b2a9;
+        --text-tertiary: #6b6a64;
+        --today-bg: #27261f;
+        --badge-bg: #042c53;
+        --badge-text: #85b7eb;
+        --on-bg: #173404;
+        --on-text: #c0dd97;
+        --on-dot: #97c459;
+        --off-bg: #501313;
+        --off-text: #f09595;
+      }
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 0.5px solid var(--border-strong);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 380px;
+      padding: 1.75rem 1.5rem 1.25rem;
+    }
+
+    .top { text-align: center; margin-bottom: 1.25rem; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0.38rem 1rem;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      margin-bottom: 0.7rem;
+    }
+    .pill.on  { background: var(--on-bg);  color: var(--on-text); }
+    .pill.off { background: var(--off-bg); color: var(--off-text); }
+
+    .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .pill.on  .dot { background: var(--on-dot); animation: pulse 1.6s ease-in-out infinite; }
+    .pill.off .dot { background: var(--off-text); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    .msg { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+
+    hr { border: none; border-top: 0.5px solid var(--border); margin: 1.1rem 0; }
+
+    .table-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-tertiary);
+      padding-bottom: 0.5rem;
+      border-bottom: 0.5px solid var(--border);
+      margin-bottom: 0.35rem;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      font-size: 13.5px;
+      padding: 5px 6px;
+      border-radius: 7px;
+      margin: 0 -6px;
+    }
+    .row.today { background: var(--today-bg); }
+
+    .day { color: var(--text-secondary); }
+    .day.today { color: var(--text-primary); font-weight: 500; }
+
+    .time { color: var(--text-primary); }
+    .time.dim { color: var(--text-tertiary); }
+
+    .badge-today {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 500;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      border-radius: 4px;
+      padding: 1px 5px;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      border-top: 0.5px solid var(--border);
+      padding-top: 0.85rem;
+      margin-top: 0.85rem;
+    }
+
+    .icon-cal { width: 14px; height: 14px; flex-shrink: 0; color: var(--text-tertiary); }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <div class="pill" id="pill"><span class="dot"></span><span id="pillText">…</span></div>
+    <p class="msg" id="msg">…</p>
+  </div>
+  <hr>
+  <div class="table-head"><span>Day</span><span>Hours (24h)</span></div>
+  <div id="schedule"></div>
+  <div class="footer">
+    <svg class="icon-cal" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+      <rect x="1.5" y="2.5" width="13" height="12" rx="2"/>
+      <line x1="1.5" y1="6" x2="14.5" y2="6"/>
+      <line x1="5" y1="1" x2="5" y2="4"/>
+      <line x1="11" y1="1" x2="11" y2="4"/>
+    </svg>
+    <span id="footerText"></span>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  Options:
+//    work    = available time while on shift/before shift/after shift
+//    off     = day off
+//    blocked = no interviews/not possible with current sched
+// ============================================================
+
+const SCHEDULE = {
+    range: "June 1 – July 12",
+    workHours:   [8, 11],  // work days but avail time
+    dayOffHours: [8, 17],  // day off with preferred time
+    days: {
+      Mon: "work",
+      Tue: "work",
+      Wed: "work",
+      Thu: "off",
+      Fri: "off",
+      Sat: "work",
+      Sun: "work",
+    },
+};
+
+  
+  const DAY_ORDER  = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const DAY_LOOKUP = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  const now         = new Date();
+  const today       = DAY_LOOKUP[now.getDay()];
+  const currentHour = now.getHours();
+
+  function getHours(type) {
+    return type === "off" ? SCHEDULE.dayOffHours : SCHEDULE.workHours;
+  }
+
+  function getTimeText(type, h0, h1) {
+    if (type === "blocked") return "Not available";
+    if (type === "off")     return `Day off (${h0}:00 – ${h1}:00)`;
+    return `${h0}:00 – ${h1}:00`;
+  }
+
+  const schedEl = document.getElementById('schedule');
+  DAY_ORDER.forEach(day => {
+    const type    = SCHEDULE.days[day];
+    const isToday = day === today;
+    const [h0, h1] = getHours(type);
+
+    const row = document.createElement('div');
+    row.className = 'row' + (isToday ? ' today' : '');
+
+    const daySpan = document.createElement('span');
+    daySpan.className = 'day' + (isToday ? ' today' : '');
+    daySpan.textContent = day;
+    if (isToday) {
+      const badge = document.createElement('span');
+      badge.className = 'badge-today';
+      badge.textContent = 'today';
+      daySpan.appendChild(badge);
+    }
+
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'time' + (type === 'blocked' ? ' dim' : '');
+    timeSpan.textContent = getTimeText(type, h0, h1);
+
+    row.appendChild(daySpan);
+    row.appendChild(timeSpan);
+    schedEl.appendChild(row);
+  });
+
+  document.getElementById('footerText').textContent = 'Schedule: ' + SCHEDULE.range;
+
+  const todayType     = SCHEDULE.days[today];
+  const [h0, h1]      = getHours(todayType);
+  const todayAvail    = todayType !== "blocked" && currentHour >= h0 && currentHour < h1;
+
+  const pill = document.getElementById('pill');
+  pill.className = 'pill ' + (todayAvail ? 'on' : 'off');
+  document.getElementById('pillText').textContent = todayAvail ? 'Available now' : 'Unavailable';
+  document.getElementById('msg').textContent = todayAvail
+    ? 'Currently accepting interview requests.'
+    : 'You may send me an SMS or email and I\u2019ll get back to you soon.';
+</script>
+</body>
+</html>
